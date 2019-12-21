@@ -52,7 +52,6 @@ public class GroupResource {
         return groupRepository.save(group);
     }
 
-    //TODO: update user table to remove groups
     @DeleteMapping("/{group}")
     public boolean delete(@PathVariable Group group) {
         usersByGroupRepository.findById(group.getId())

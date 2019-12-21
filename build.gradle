@@ -21,6 +21,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-cassandra'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.apache.commons:commons-lang3:3.7'
+	implementation 'commons-io:commons-io:2.6'
+
 
 	compile group: 'com.datastax.oss', name: 'java-driver-core', version: '4.1.0'
 	compile group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.2.3'
@@ -29,6 +32,11 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	testImplementation('org.cassandraunit:cassandra-unit-spring:3.11.2.0') {
+		exclude group:'org.cassandraunit', module:'cassandra-unit'
+	}
+	testImplementation 'org.cassandraunit:cassandra-unit:3.11.2.0'
+	testImplementation 'org.hectorclient:hector-core:2.0-0'
 }
 
 dependencyManagement {
