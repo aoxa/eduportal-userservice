@@ -105,6 +105,7 @@ public class CassandraConfiguration extends AbstractCassandraConfiguration {
                 .append("lastName text,")
                 .append("email text,")
                 .append("password text,")
+                .append("enabled boolean,")
                 .append("children list<uuid>);");
 
         session.execute(sb.toString());

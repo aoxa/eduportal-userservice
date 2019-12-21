@@ -2,6 +2,7 @@ package io.zuppelli.userservice.resource;
 
 import io.zuppelli.userservice.model.*;
 import io.zuppelli.userservice.repository.*;
+import io.zuppelli.userservice.resource.dto.UserDTO;
 import io.zuppelli.userservice.service.GroupService;
 import io.zuppelli.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +28,12 @@ public class UserResource {
     private UsersByGroupRepository usersByGroup;
 
     @PostMapping()
-    public User addUser() {
+    public User addUser(@RequestBody UserDTO dto) {
 
         User user = new User();
-        user.setEmail("pedroz@email.com");
-        user.setFirstName("Pedro");
-        user.setLastName("Zuppelli");
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
 
         return userService.persist(user);
     }

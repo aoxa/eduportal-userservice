@@ -30,6 +30,17 @@ public class User {
     @Column
     private List<UUID> children;
 
+    @Column
+    private boolean enabled = false;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public UUID getId() {
         return id;
     }

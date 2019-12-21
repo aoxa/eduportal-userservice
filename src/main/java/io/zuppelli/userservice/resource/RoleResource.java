@@ -2,6 +2,7 @@ package io.zuppelli.userservice.resource;
 
 import io.zuppelli.userservice.model.Role;
 import io.zuppelli.userservice.repository.RoleRepository;
+import io.zuppelli.userservice.resource.dto.RoleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +21,9 @@ public class RoleResource
     }
 
     @PostMapping
-    public Role addRole() {
+    public Role addRole(@RequestBody RoleDTO dto) {
         Role role = new Role();
-        role.setName("test");
+        role.setName(dto.getName().replace(" ", "_"));
 
         return roleRepository.save(role);
     }
