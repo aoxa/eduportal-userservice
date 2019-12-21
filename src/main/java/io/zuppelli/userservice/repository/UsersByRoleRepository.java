@@ -1,0 +1,9 @@
+package io.zuppelli.userservice.repository;
+
+import io.zuppelli.userservice.model.UserByRole;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+
+import java.util.UUID;
+
+public interface UsersByRoleRepository extends CassandraRepository<UserByRole, UUID> {
+}
