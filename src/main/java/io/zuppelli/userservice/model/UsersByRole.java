@@ -4,15 +4,16 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Table
-public class UserByRole {
+public class UsersByRole {
     @PrimaryKey
     private UUID roleId;
 
-    @Column
-    private UUID userId;
+    @Column("user_ids")
+    private Set<UUID> userIds;
 
     public UUID getRoleId() {
         return roleId;
@@ -22,11 +23,11 @@ public class UserByRole {
         this.roleId = roleId;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public Set<UUID> getUserIds() {
+        return userIds;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUserIds(Set<UUID> userId) {
+        this.userIds = userIds;
     }
 }

@@ -8,10 +8,10 @@ import java.util.UUID;
 
 @Table
 public class GroupByRole {
-    @PrimaryKey
+    @PrimaryKey("role_id")
     private UUID roleId;
 
-    @Column
+    @Column("group_id")
     private UUID groupId;
 
     public UUID getRoleId() {

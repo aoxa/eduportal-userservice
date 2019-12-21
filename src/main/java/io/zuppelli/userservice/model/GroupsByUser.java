@@ -8,9 +8,9 @@ import java.util.*;
 
 @Table
 public class GroupsByUser {
-    @PrimaryKey
+    @PrimaryKey("user_id")
     private UUID userId;
-    @Column
+    @Column("group_ids")
     private Set<UUID> groupIds = new HashSet<>();
 
     public UUID getUserId() {

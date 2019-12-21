@@ -3,8 +3,10 @@ package io.zuppelli.userservice.service.impl;
 import io.zuppelli.userservice.model.Group;
 import io.zuppelli.userservice.model.GroupsByUser;
 import io.zuppelli.userservice.model.User;
+import io.zuppelli.userservice.model.UsersByGroup;
 import io.zuppelli.userservice.repository.GroupByUserRepository;
 import io.zuppelli.userservice.repository.GroupRepository;
+import io.zuppelli.userservice.repository.UsersByGroupRepository;
 import io.zuppelli.userservice.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import java.util.Optional;
 public class GroupServiceImpl implements GroupService {
     @Autowired
     private GroupByUserRepository groupByUserRepository;
+    @Autowired
+    private UsersByGroupRepository usersByGroupRepository;
 
     @Autowired
     private GroupRepository groupRepository;
@@ -44,6 +48,16 @@ public class GroupServiceImpl implements GroupService {
             groupsByUser.getGroupIds().add(group.getId());
 
             groupByUserRepository.save(groupsByUser);
+
+            UsersByGroup usersByGroup = usersByGroupRepository.findById(group.getId()).orElseGet(()->{
+                UsersByGroup ubg = new UsersByGroup();
+                ubg.setGroupId(group.getId());
+                return ubg;
+            });
+
+            usersByGroup.getUserIds().add(user.getId());
+
+            usersByGroupRepository.save(usersByGroup);
         }
     }
 }

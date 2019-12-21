@@ -4,15 +4,18 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Table
-public class UserByGroup {
-    @PrimaryKey
+public class UsersByGroup {
+    @PrimaryKey("group_id")
     private UUID groupId;
 
-    @Column
-    private UUID userId;
+    @Column("user_ids")
+    private Set<UUID> userIds = new HashSet<>();
 
     public UUID getGroupId() {
         return groupId;
@@ -22,11 +25,11 @@ public class UserByGroup {
         this.groupId = groupId;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public Set<UUID> getUserIds() {
+        return userIds;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUserIds(Set<UUID> userId) {
+        this.userIds = userIds;
     }
 }

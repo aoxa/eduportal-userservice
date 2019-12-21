@@ -15,10 +15,10 @@ public class User {
     @PrimaryKey
     private UUID id;
 
-    @Column
+    @Column("first_name")
     private String firstName;
 
-    @Column
+    @Column("last_name")
     private String lastName;
 
     @Column

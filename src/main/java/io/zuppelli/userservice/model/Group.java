@@ -16,7 +16,7 @@ public class Group {
     @Column
     private String name;
 
-    @Column
+    @Column("primary_role")
     private UUID primaryRole;
 
     public UUID getId() {
