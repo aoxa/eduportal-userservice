@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserService {
-    Optional<User> find(String email);
+public interface RoleService {
 
-    Optional<User> find(UUID id);
+    Optional<Role> find(UUID id);
 
-    User persist(User user);
+    void addRole(User user, Role role);
+
+    List<Role> getRoles(User user);
 }

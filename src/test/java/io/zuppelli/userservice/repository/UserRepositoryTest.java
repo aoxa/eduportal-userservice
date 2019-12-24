@@ -3,6 +3,7 @@ package io.zuppelli.userservice.repository;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import io.zuppelli.userservice.configuration.CassandraConfiguration;
+import io.zuppelli.userservice.helper.DataHelper;
 import io.zuppelli.userservice.model.User;
 import io.zuppelli.userservice.service.UserService;
 import org.apache.cassandra.exceptions.ConfigurationException;
@@ -35,13 +36,7 @@ public class UserRepositoryTest {
 
     @BeforeClass
     public static void startCassandraEmbedded() throws InterruptedException, TTransportException, ConfigurationException, IOException {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-        Cluster cluster = Cluster.builder()
-                .addContactPoint("127.0.0.1").withPort(9142).build();
-        Session session = cluster.connect();
-
-        final CQLDataLoader cqlDataLoader = new CQLDataLoader(session);
-        cqlDataLoader.load(new ClassPathCQLDataSet("db.cql", false, true, "userkeyspace"));
+        DataHelper.initialize();
     }
 
     @Test
@@ -61,6 +56,6 @@ public class UserRepositoryTest {
 
     @AfterClass
     public static void stopEmbedded() {
-        EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
+        DataHelper.tearDown();
     }
 }

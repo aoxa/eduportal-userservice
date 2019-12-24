@@ -1,4 +1,4 @@
-CREATE KEYSPACE userKeyspace with REPLICATION  = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
+CREATE KEYSPACE  IF NOT EXISTS userKeyspace with REPLICATION  = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
 
 USE userKeyspace;
 

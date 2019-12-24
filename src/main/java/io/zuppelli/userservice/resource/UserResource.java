@@ -4,8 +4,10 @@ import io.zuppelli.userservice.model.*;
 import io.zuppelli.userservice.repository.*;
 import io.zuppelli.userservice.resource.dto.UserDTO;
 import io.zuppelli.userservice.service.GroupService;
+import io.zuppelli.userservice.service.RoleService;
 import io.zuppelli.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,17 +21,13 @@ public class UserResource {
     private UserService userService;
 
     @Autowired
-    private RolesByUserRepository rolesByUserRepository;
+    private RoleService roleService;
 
     @Autowired
     private GroupService groupService;
 
-    @Autowired
-    private UsersByGroupRepository usersByGroup;
-
-    @PostMapping()
+    @PostMapping
     public User addUser(@RequestBody UserDTO dto) {
-
         User user = new User();
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
@@ -40,43 +38,58 @@ public class UserResource {
 
     @GetMapping("/email/{email}")
     public Optional<User> getUser(@PathVariable String email) {
-        return userService.findUser(email);
+        return userService.find(email);
     }
 
     @GetMapping("/{id}")
     public Optional<User> getUser(@PathVariable UUID id) {
-        return userService.findUser(id);
+        return userService.find(id);
     }
 
     @PostMapping("/{user}/groups/{group}")
-    public List<Group> addGroup(@PathVariable User user, @PathVariable Group group) {
-        groupService.addGroup(user, group);
+    public List<Group> addGroup(@PathVariable UUID user, @PathVariable UUID group) {
 
-        return groupService.findGroups(user);
+        Optional<User> u = userService.find(user);
+        Optional<Group> g = groupService.find(group);
+
+        if(!u.isPresent() || !g.isPresent()) {
+            throw new EntityNotFoundException();
+        }
+
+        groupService.addGroup(u.get(), g.get());
+
+        return groupService.findGroups(u.get());
     }
 
     @GetMapping("/{user}/groups")
     public List<Group> getUserGroups(@PathVariable User user) {
+        if( null == user) throw new EntityNotFoundException();
+
         return groupService.findGroups(user);
     }
 
-    @GetMapping("/{id}/roles")
-    public Optional<RolesByUser> getUserRoles(@PathVariable UUID id) {
-        return rolesByUserRepository.findById(id);
+    @GetMapping("/{user}/roles")
+    public List<Role> getUserRoles(@PathVariable User user) {
+        if( null == user) throw new EntityNotFoundException();
+
+        return roleService.getRoles(user);
     }
 
     @PostMapping("/{user}/roles/{role}")
-    public User addRole(@PathVariable User user, @PathVariable Role role) {
-        Optional<RolesByUser> rolesByUser = rolesByUserRepository.findById(user.getId());
+    public List<Role> addRole(@PathVariable UUID user, @PathVariable UUID role) {
+        Optional<User> u = userService.find(user);
+        Optional<Role> r = roleService.find(role);
 
-        RolesByUser rbu = rolesByUser.orElseGet(()->{
-            RolesByUser r = new RolesByUser();
-            r.setUserId(user.getId());
-            return r;
-        });
-        rbu.getRoleIds().add(role.getId());
-        rolesByUserRepository.save(rbu);
+        if(!u.isPresent() || !r.isPresent()) {
+            throw new EntityNotFoundException();
+        }
 
-        return user;
+        roleService.addRole(u.get(), r.get());
+
+        return roleService.getRoles(u.get());
     }
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public static final class EntityNotFoundException extends RuntimeException {}
+
 }

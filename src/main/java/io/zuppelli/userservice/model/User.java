@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.model;
 
+import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.zuppelli.userservice.annotation.GenerateUUID;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @GenerateUUID
 public class User {
     @PrimaryKey
+    @PartitionKey
     private UUID id;
 
     @Column("first_name")

@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.service.impl;
 
+import io.zuppelli.userservice.model.Role;
 import io.zuppelli.userservice.model.User;
 import io.zuppelli.userservice.repository.UserByEmailRepository;
 import io.zuppelli.userservice.repository.UserRepository;
@@ -7,6 +8,7 @@ import io.zuppelli.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,11 +20,11 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserByEmailRepository userByEmailRepository;
 
-    public Optional<User> findUser(UUID id) {
+    public Optional<User> find(UUID id) {
         return userRepository.findById(id);
     }
 
-    public Optional<User> findUser(String email) {
+    public Optional<User> find(String email) {
         return userByEmailRepository.getByEmail(email);
     }
 
