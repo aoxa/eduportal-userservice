@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.resource;
 
+import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.*;
 import io.zuppelli.userservice.repository.*;
 import io.zuppelli.userservice.resource.dto.UserDTO;
@@ -49,16 +50,12 @@ public class UserResource {
     @PostMapping("/{user}/groups/{group}")
     public List<Group> addGroup(@PathVariable UUID user, @PathVariable UUID group) {
 
-        Optional<User> u = userService.find(user);
-        Optional<Group> g = groupService.find(group);
+        User u = userService.find(user).orElseThrow(EntityNotFoundException::new);
+        Group g = groupService.find(group).orElseThrow(EntityNotFoundException::new);
 
-        if(!u.isPresent() || !g.isPresent()) {
-            throw new EntityNotFoundException();
-        }
+        groupService.addGroup(u, g);
 
-        groupService.addGroup(u.get(), g.get());
-
-        return groupService.findGroups(u.get());
+        return groupService.findGroups(u);
     }
 
     @GetMapping("/{user}/groups")
@@ -77,19 +74,11 @@ public class UserResource {
 
     @PostMapping("/{user}/roles/{role}")
     public List<Role> addRole(@PathVariable UUID user, @PathVariable UUID role) {
-        Optional<User> u = userService.find(user);
-        Optional<Role> r = roleService.find(role);
+        User u = userService.find(user).orElseThrow(EntityNotFoundException::new);
+        Role r = roleService.find(role).orElseThrow(EntityNotFoundException::new);
 
-        if(!u.isPresent() || !r.isPresent()) {
-            throw new EntityNotFoundException();
-        }
+        roleService.addRole(u, r);
 
-        roleService.addRole(u.get(), r.get());
-
-        return roleService.getRoles(u.get());
+        return roleService.getRoles(u);
     }
-
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public static final class EntityNotFoundException extends RuntimeException {}
-
 }

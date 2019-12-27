@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.resource;
 
+import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.Role;
 import io.zuppelli.userservice.repository.GroupsByRoleRepository;
 import io.zuppelli.userservice.repository.RoleRepository;
@@ -46,6 +47,10 @@ public class RoleResource
 
     @DeleteMapping("/{role}")
     public boolean deleteRole(@PathVariable Role role) {
+        if(null == role) {
+            throw new EntityNotFoundException();
+        }
+
         if(groupsByRoleRepository.findById(role.getId()).isPresent()) {
             return false;
         }

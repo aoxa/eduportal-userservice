@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.resource;
 
+import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.Group;
 import io.zuppelli.userservice.model.Role;
 import io.zuppelli.userservice.repository.GroupRepository;
@@ -54,6 +55,10 @@ public class GroupResource {
 
     @DeleteMapping("/{group}")
     public boolean delete(@PathVariable Group group) {
+        if(null == group) {
+            throw new EntityNotFoundException();
+        }
+
         usersByGroupRepository.findById(group.getId())
             .ifPresent(usersByGroupRepository::delete);
 
