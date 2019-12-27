@@ -1,13 +1,14 @@
 package io.zuppelli.userservice.resource.dto;
 
+import javax.validation.constraints.NotEmpty;
+
 public class UserDTO {
+    @NotEmpty
     private String firstName;
-
+    @NotEmpty
     private String lastName;
-
+    @NotEmpty
     private String email;
-
-    private String password;
 
     public String getFirstName() {
         return firstName;
@@ -31,13 +32,5 @@ public class UserDTO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 }

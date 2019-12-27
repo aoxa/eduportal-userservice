@@ -7,7 +7,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import java.util.Set;
 import java.util.UUID;
 
-@Table
+@Table("users_by_role")
 public class UsersByRole {
     @PrimaryKey
     private UUID roleId;

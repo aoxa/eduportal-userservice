@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.model;
 
+import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.zuppelli.userservice.annotation.GenerateUUID;
@@ -17,11 +18,19 @@ public class User {
     @PartitionKey
     private UUID id;
 
+    @Column
+    private String username;
+
     @Column("first_name")
     private String firstName;
 
     @Column("last_name")
+    @ClusteringColumn(1)
     private String lastName;
+
+    @Column
+    @ClusteringColumn(2)
+    private UUID parent;
 
     @Column
     private String email;
@@ -90,5 +99,21 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public UUID getParent() {
+        return parent;
+    }
+
+    public void setParent(UUID parent) {
+        this.parent = parent;
     }
 }

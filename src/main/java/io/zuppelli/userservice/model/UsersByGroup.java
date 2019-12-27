@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Table
+@Table("users_by_group")
 public class UsersByGroup {
     @PrimaryKey("group_id")
     private UUID groupId;

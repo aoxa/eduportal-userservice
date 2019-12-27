@@ -6,7 +6,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.util.UUID;
 
-@Table
+@Table("group_by_role")
 public class GroupByRole {
     @PrimaryKey("role_id")
     private UUID roleId;

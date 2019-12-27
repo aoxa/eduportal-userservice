@@ -1,16 +1,20 @@
 package io.zuppelli.userservice.resource;
 
+import io.zuppelli.userservice.exception.BadRequestException;
 import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.*;
 import io.zuppelli.userservice.repository.*;
+import io.zuppelli.userservice.resource.dto.AuthDTO;
 import io.zuppelli.userservice.resource.dto.UserDTO;
 import io.zuppelli.userservice.service.GroupService;
 import io.zuppelli.userservice.service.RoleService;
 import io.zuppelli.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +31,9 @@ public class UserResource {
     @Autowired
     private GroupService groupService;
 
+    @Autowired
+    private UserByUsernameRepository usernameRepository;
+
     @PostMapping
     public User addUser(@RequestBody UserDTO dto) {
         User user = new User();
@@ -40,6 +47,14 @@ public class UserResource {
     @GetMapping("/email/{email}")
     public Optional<User> getUser(@PathVariable String email) {
         return userService.find(email);
+    }
+
+    @GetMapping("/username/{username}")
+    public Optional<User> getByUsername(@PathVariable String username) {
+        UserByUsername userByUsername = usernameRepository.findById(username)
+                .orElseThrow(EntityNotFoundException::new);
+
+        return userService.find(userByUsername.getUserId());
     }
 
     @GetMapping("/{id}")
@@ -60,14 +75,14 @@ public class UserResource {
 
     @GetMapping("/{user}/groups")
     public List<Group> getUserGroups(@PathVariable User user) {
-        if( null == user) throw new EntityNotFoundException();
+        if (null == user) throw new EntityNotFoundException();
 
         return groupService.findGroups(user);
     }
 
     @GetMapping("/{user}/roles")
     public List<Role> getUserRoles(@PathVariable User user) {
-        if( null == user) throw new EntityNotFoundException();
+        if (null == user) throw new EntityNotFoundException();
 
         return roleService.getRoles(user);
     }

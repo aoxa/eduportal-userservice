@@ -6,7 +6,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.util.*;
 
-@Table
+@Table("groups_by_user")
 public class GroupsByUser {
     @PrimaryKey("user_id")
     private UUID userId;
