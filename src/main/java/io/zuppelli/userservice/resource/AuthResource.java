@@ -1,7 +1,6 @@
 package io.zuppelli.userservice.resource;
 
 import io.zuppelli.userservice.exception.BadRequestException;
-import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.User;
 import io.zuppelli.userservice.model.UserByUsername;
 import io.zuppelli.userservice.repository.UserByUsernameRepository;
@@ -30,21 +29,7 @@ public class AuthResource {
 
     @PostMapping
     public User auth(@RequestBody @Valid AuthDTO auth) {
-        final String username = auth.getUsername();
-
-        if (username.contains("@")) {
-            User user = userService.find(username).orElseThrow(BadRequestException::new);
-
-            if (! passwordEncoder.matches(auth.getPassword(), user.getPassword())) {
-                throw new BadRequestException();
-            }
-
-            return user;
-        }
-
-        UserByUsername userByUsername = usernameRepository.findById(username).orElseThrow(BadRequestException::new);
-
-        User user = userService.find(userByUsername.getUserId()).orElseThrow(BadRequestException::new);
+        User user = getUser(auth);
 
         if (! passwordEncoder.matches(auth.getPassword(), user.getPassword())) {
             throw new BadRequestException();
@@ -56,7 +41,7 @@ public class AuthResource {
     @PostMapping("/update")
     @ResponseStatus(HttpStatus.OK)
     public void authUpdate(@RequestBody @Valid AuthDTO auth) {
-        User user = userService.find(auth.getUsername()).orElseThrow(EntityNotFoundException::new);
+        User user = getUser(auth);
 
         user.setPassword(passwordEncoder.encode(auth.getPassword()));
 
@@ -87,5 +72,16 @@ public class AuthResource {
         }
 
         userService.persist(user);
+    }
+
+    private User getUser(AuthDTO auth) {
+        User user = null;
+        if(auth.getUsername().contains("@")) {
+            user = userService.find(auth.getUsername()).orElseThrow(BadRequestException::new);
+        } else {
+            UserByUsername userByUsername = usernameRepository.findById(auth.getUsername()).orElseThrow(BadRequestException::new);
+            user = userService.find(userByUsername.getUserId()).orElseThrow(BadRequestException::new);
+        }
+        return user;
     }
 }

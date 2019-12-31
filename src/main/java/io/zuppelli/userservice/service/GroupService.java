@@ -13,4 +13,6 @@ public interface GroupService {
     List<Group> findGroups(User user);
 
     void addGroup(User user, Group group);
+
+    Builder<Group> builder();
 }

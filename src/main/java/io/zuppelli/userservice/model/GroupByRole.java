@@ -14,6 +14,13 @@ public class GroupByRole {
     @Column("group_id")
     private UUID groupId;
 
+    public GroupByRole(){}
+
+    public GroupByRole(UUID roleId, UUID groupId) {
+        this.roleId = roleId;
+        this.groupId = groupId;
+    }
+
     public UUID getRoleId() {
         return roleId;
     }

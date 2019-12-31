@@ -8,6 +8,7 @@ import io.zuppelli.userservice.repository.RoleRepository;
 import io.zuppelli.userservice.repository.UsersByGroupRepository;
 import io.zuppelli.userservice.repository.UsersByRoleRepository;
 import io.zuppelli.userservice.resource.dto.GroupDTO;
+import io.zuppelli.userservice.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,9 @@ public class GroupResource {
     private GroupRepository groupRepository;
 
     @Autowired
+    private GroupService groupService;
+
+    @Autowired
     private UsersByGroupRepository usersByGroupRepository;
 
     @Autowired
@@ -28,17 +32,7 @@ public class GroupResource {
 
     @PostMapping
     public Group add(@RequestBody GroupDTO dto) {
-        Group group = new Group();
-        group.setName(dto.getName());
-
-        Role role = new Role();
-        role.setName(dto.getName().replace(" ", "_"));
-        roleRepository.save(role);
-
-        group.setPrimaryRole(role.getId());
-        groupRepository.save(group);
-
-        return group;
+        return groupService.builder().add("name", dto.getName()).build();
     }
 
     @GetMapping("/{group}")

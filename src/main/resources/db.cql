@@ -2,9 +2,11 @@ CREATE TABLE IF NOT EXISTS ROLES ( id uuid PRIMARY KEY, name text);
 
 CREATE TABLE IF NOT EXISTS GROUPS ( id uuid PRIMARY KEY, name text, primary_role uuid);
 
+CREATE MATERIALIZED VIEW IF NOT EXISTS GROUP_BY_NAME AS SELECT * from GROUPS WHERE id is not null AND name is not null PRIMARY KEY(name, id);
+
 CREATE TABLE IF NOT EXISTS USERS ( id uuid PRIMARY KEY, first_name text, last_name text, username text, email text, password text, enabled boolean, parent uuid, children list<uuid>);
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS USER_BY_EMAIL AS SElECT * from USERS WHERE id is not null  AND email is not null PRIMARY KEY(email, id);
+CREATE MATERIALIZED VIEW IF NOT EXISTS USER_BY_EMAIL AS SELECT * from USERS WHERE id is not null  AND email is not null PRIMARY KEY(email, id);
 
 CREATE TABLE IF NOT EXISTS USER_BY_USERNAME ( username text PRIMARY KEY, user_id uuid );
 

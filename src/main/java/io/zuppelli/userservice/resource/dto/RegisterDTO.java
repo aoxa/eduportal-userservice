@@ -1,6 +1,7 @@
 package io.zuppelli.userservice.resource.dto;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RegisterDTO {
@@ -11,7 +12,7 @@ public class RegisterDTO {
     @NotEmpty
     private String username;
 
-    List<UserDTO> children;
+    private List<UserDTO> children = new ArrayList<>();
 
     public String getPassword() {
         return password;

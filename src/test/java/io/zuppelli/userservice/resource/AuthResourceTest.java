@@ -10,6 +10,7 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,7 +176,6 @@ public class AuthResourceTest {
     public void authNoUserPasswordMismatch() throws Exception {
         String username = "username";
 
-
         given(passwordEncoder.matches("mypass", "pass")).willReturn(false);
 
         given(usernameRepository.findById(username)).willReturn(Optional.empty());
@@ -187,10 +187,111 @@ public class AuthResourceTest {
     }
 
     @Test
-    public void authUpdate() {
+    public void authUpdateUserByEmail() throws Exception {
+        String username = "test@test.com";
+        UUID userId = UUID.randomUUID();
+
+        User user = new User();
+        user.setFirstName("test");
+        user.setId(userId);
+
+        given(passwordEncoder.encode("mypass")).willReturn("encoded");
+
+        given(userService.persist(user)).willAnswer((a)->user);
+
+        given(userService.find(username)).willReturn(Optional.of(user));
+
+        mvc.perform(post("/auth/update")
+                .content(String.format("{\"username\":\"%s\", \"password\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void register() {
+    public void authUpdateUserByUsername() throws Exception {
+        String username = "test";
+        UUID userId = UUID.randomUUID();
+
+        User user = new User();
+        user.setFirstName("test");
+        user.setId(userId);
+
+        UserByUsername ubu = new UserByUsername();
+        ubu.setUsername("test");
+        ubu.setUserId(userId);
+
+        given(passwordEncoder.encode("mypass")).willReturn("encoded");
+
+        given(userService.persist(user)).willAnswer((a)->user);
+
+        given(usernameRepository.findById(username)).willReturn(Optional.of(ubu));
+
+        given(userService.find(userId)).willReturn(Optional.of(user));
+
+        mvc.perform(post("/auth/update")
+                .content(String.format("{\"username\":\"%s\", \"password\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void authUpdateUserNotFound() throws Exception {
+        String username = "test@test.com";
+
+        given(userService.find(username)).willReturn(Optional.empty());
+
+        mvc.perform(post("/auth/update")
+                .content(String.format("{\"username\":\"%s\", \"password\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void authUpdateUsernameNotFound() throws Exception {
+        String username = "test";
+
+        given(usernameRepository.findById(username)).willReturn(Optional.empty());
+
+        mvc.perform(post("/auth/update")
+                .content(String.format("{\"username\":\"%s\", \"password\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void registerEmailMismatch() throws Exception {
+        String username = "test";
+
+        mvc.perform(post("/auth/test@test.com/register")
+                .content(String.format("{\"username\":\"%s\", \"password\":\"apass\", \"retypePassword\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void registerUserNotFound() throws Exception {
+        String username = "test@test.com";
+
+        given(userService.find(username)).willReturn(Optional.empty());
+
+        mvc.perform(post(String.format("/auth/%s/register", username))
+                .content(String.format("{\"username\":\"test\", \"password\":\"mypass\", \"retypePassword\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void register() throws Exception {
+        String username = "test@test.com";
+
+        User user = new User();
+        user.setEmail(username);
+
+        given(userService.find(username)).willReturn(Optional.of(user));
+
+        mvc.perform(post(String.format("/auth/%s/register", username))
+                .content(String.format("{\"username\":\"test\", \"password\":\"mypass\", \"retypePassword\":\"mypass\"}", username))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
     }
 }
