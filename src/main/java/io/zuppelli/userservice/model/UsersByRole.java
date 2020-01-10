@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Table("users_by_role")
 public class UsersByRole {
-    @PrimaryKey
+    @PrimaryKey("role_id")
     private UUID roleId;
 
     @Column("user_ids")

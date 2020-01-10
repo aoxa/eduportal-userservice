@@ -10,6 +10,7 @@ import java.util.*;
 public class GroupsByUser {
     @PrimaryKey("user_id")
     private UUID userId;
+
     @Column("group_ids")
     private Set<UUID> groupIds = new HashSet<>();
 

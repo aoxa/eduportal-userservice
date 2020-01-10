@@ -1,6 +1,9 @@
 package io.zuppelli.userservice.resource.dto;
 
+import javax.validation.constraints.NotBlank;
+
 public class GroupDTO {
+    @NotBlank
     private String name;
 
     public String getName() {

@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface GroupService {
     Optional<Group> find(UUID group);
 
+    void delete(Group group);
+
     List<Group> findGroups(User user);
 
     void addGroup(User user, Group group);

@@ -4,6 +4,7 @@ import io.zuppelli.userservice.model.*;
 import io.zuppelli.userservice.repository.*;
 import io.zuppelli.userservice.service.Builder;
 import io.zuppelli.userservice.service.GroupService;
+import io.zuppelli.userservice.service.RoleService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private RoleService roleService;
 
     @Autowired
     private GroupRepository groupRepository;
@@ -76,40 +80,41 @@ public class GroupServiceImpl implements GroupService {
         return this.new GroupBuilder(roleRepository, groupsByRoleRepository, groupRepository);
     }
 
-    private class GroupBuilder implements Builder<Group> {
-        private Group group = new Group();
+    public void delete(Group group) {
+        usersByGroupRepository.findById(group.getId())
+                .ifPresent((ubg)->{
+                    groupByUserRepository.findAllById(ubg.getUserIds()).forEach((gbu)->{
+                        gbu.getGroupIds().remove(group.getId());
+                        groupByUserRepository.save(gbu);
+                    });
 
+                    usersByGroupRepository.delete(ubg);
+                });
+
+        groupsByRoleRepository.findById(group.getPrimaryRole())
+                .ifPresent(groupsByRoleRepository::delete);
+
+        roleService.delete(group.getPrimaryRole());
+
+        groupRepository.delete(group);
+    }
+
+    private class GroupBuilder extends Builder<Group> {
         private final RoleRepository roleRepository;
         private final GroupsByRoleRepository groupsByRoleRepository;
         private final GroupRepository groupRepository;
 
         GroupBuilder(RoleRepository roleRepository, GroupsByRoleRepository groupsByRoleRepository, GroupRepository groupRepository) {
+            super(Group.class);
             this.roleRepository = roleRepository;
             this.groupsByRoleRepository = groupsByRoleRepository;
             this.groupRepository = groupRepository;
         }
 
-        public Builder<Group> add(String method, Object content) {
-            if( null == group) throw new UnsupportedOperationException();
 
-            try {
-                if(! method.startsWith("set")) {
-                    StringBuilder sb = new StringBuilder("set");
-                    sb.append(StringUtils.capitalize(method));
-                    method = sb.toString();
-                }
-                Method m = Group.class.getMethod(method, content.getClass());
-                m.invoke(group, content);
-            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-                throw new UnsupportedOperationException();
-            }
+        public void prebuild() {
+                Group group = this.getObj();
 
-            return this;
-        }
-
-        public Group build() {
-            if( null == group) throw new UnsupportedOperationException();
-            try {
                 Role role = new Role();
                 role.setName(group.getName().replace(" ", "_"));
                 role = roleRepository.save(role);
@@ -119,11 +124,6 @@ public class GroupServiceImpl implements GroupService {
                 group = groupRepository.save(group);
 
                 groupsByRoleRepository.save(new GroupByRole(role.getId(), group.getId()));
-
-                return group;
-            } finally {
-                group = null;
-            }
         }
     }
 }

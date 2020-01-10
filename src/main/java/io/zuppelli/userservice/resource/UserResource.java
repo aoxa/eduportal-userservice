@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.resource;
 
+import com.datastax.driver.core.PagingState;
 import io.zuppelli.userservice.exception.BadRequestException;
 import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.*;
@@ -9,7 +10,11 @@ import io.zuppelli.userservice.resource.dto.UserDTO;
 import io.zuppelli.userservice.service.GroupService;
 import io.zuppelli.userservice.service.RoleService;
 import io.zuppelli.userservice.service.UserService;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +45,7 @@ public class UserResource {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
+        user.setUsername(dto.getUsername());
 
         return userService.persist(user);
     }
@@ -55,6 +61,19 @@ public class UserResource {
                 .orElseThrow(EntityNotFoundException::new);
 
         return userService.find(userByUsername.getUserId());
+    }
+
+    @GetMapping("/username/query/{username}")
+    public List<UserByUsername> getLikeUsername(@PathVariable String username) {
+        return usernameRepository.findAllByUsernameGreaterThanEqual(username);
+    }
+
+    @PostMapping("/{user}/activate")
+    public Boolean activateUser(@PathVariable User user) {
+        user.setEnabled(!user.isEnabled());
+        userService.persist(user);
+
+        return user.isEnabled();
     }
 
     @GetMapping("/{id}")
@@ -95,5 +114,23 @@ public class UserResource {
         roleService.addRole(u, r);
 
         return roleService.getRoles(u);
+    }
+
+    @GetMapping
+    public Page<User> list(String hash ) {
+        Pageable pageRequest = CassandraPageRequest.of(0,5);
+
+        if(null != hash) {
+            PagingState pagingState = PagingState.fromBytes(Base64.decode(hash));
+            pageRequest = CassandraPageRequest.of(pageRequest, pagingState).next();
+        }
+
+        Slice<User> slice = userService.find(pageRequest);
+        Page<User> page = new Page();
+        page.setElements(slice.getContent());
+        page.setNext(slice.hasNext());
+        page.setPageHash((CassandraPageRequest) slice.getPageable(), hash);
+
+        return page;
     }
 }

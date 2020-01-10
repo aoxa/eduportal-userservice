@@ -14,4 +14,8 @@ public interface RoleService {
     void addRole(User user, Role role);
 
     List<Role> getRoles(User user);
+
+    default void delete(Role role) {delete(role.getId());}
+
+    void delete(UUID roleid);
 }

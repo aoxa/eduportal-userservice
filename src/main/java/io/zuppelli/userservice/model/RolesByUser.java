@@ -9,10 +9,10 @@ import java.util.*;
 @Table("roles_by_user")
 public class RolesByUser {
 
-    @PrimaryKey
+    @PrimaryKey("user_id")
     private UUID userId;
 
-    @Column
+    @Column("role_ids")
     private Set<UUID> roleIds = new HashSet<>();
 
     public UUID getUserId() {
