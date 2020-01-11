@@ -6,10 +6,12 @@ import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.model.*;
 import io.zuppelli.userservice.repository.*;
 import io.zuppelli.userservice.resource.dto.AuthDTO;
+import io.zuppelli.userservice.resource.dto.InviteDTO;
 import io.zuppelli.userservice.resource.dto.UserDTO;
 import io.zuppelli.userservice.service.GroupService;
 import io.zuppelli.userservice.service.RoleService;
 import io.zuppelli.userservice.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
@@ -19,10 +21,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -50,6 +54,30 @@ public class UserResource {
         return userService.persist(user);
     }
 
+    @PostMapping("/invite")
+    public User invite(@Valid @RequestBody InviteDTO dto) {
+        final User user = new User();
+        user.setUsername(dto.getEmail());
+        user.setEmail(dto.getEmail());
+
+        userService.persist(user);
+
+        dto.getUserGroups()
+                .forEach(uuid->groupService.find(uuid)
+                        .ifPresent(group -> groupService.addGroup(user, group)));
+        return user;
+    }
+    @PutMapping("/{user}")
+    public User editUser(@RequestBody @Valid UserDTO dto, @PathVariable User user) {
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+
+        if(!StringUtils.isBlank(dto.getUsername())) user.setUsername(dto.getUsername());
+
+        return userService.persist(user);
+    }
+
     @GetMapping("/email/{email}")
     public Optional<User> getUser(@PathVariable String email) {
         return userService.find(email);
@@ -64,8 +92,9 @@ public class UserResource {
     }
 
     @GetMapping("/username/query/{username}")
-    public List<UserByUsername> getLikeUsername(@PathVariable String username) {
-        return usernameRepository.findAllByUsernameGreaterThanEqual(username);
+    public List<Optional<User>> getLikeUsername(@PathVariable String username) {
+        return usernameRepository.findAllByUsernameGreaterThanEqualAndUsernameLessThanEqual(username, username+"z")
+                .stream().map(UserByUsername::getUserId).map(userService::find).collect(Collectors.toList());
     }
 
     @PostMapping("/{user}/activate")
@@ -81,10 +110,21 @@ public class UserResource {
         return userService.find(id);
     }
 
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @DeleteMapping("/{user}/groups/{group}")
+    public void removeGroup(@PathVariable UUID user, @PathVariable UUID group) {
+        User u = userService.find(user).orElseThrow(EntityNotFoundException::new);
+
+        Group g = groupService.find(group).orElseThrow(EntityNotFoundException::new);
+
+        groupService.removeGroup(u,g);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/{user}/groups/{group}")
     public List<Group> addGroup(@PathVariable UUID user, @PathVariable UUID group) {
-
         User u = userService.find(user).orElseThrow(EntityNotFoundException::new);
+
         Group g = groupService.find(group).orElseThrow(EntityNotFoundException::new);
 
         groupService.addGroup(u, g);

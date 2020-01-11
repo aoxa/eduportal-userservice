@@ -10,11 +10,17 @@ import java.util.UUID;
 public interface GroupService {
     Optional<Group> find(UUID group);
 
+    Optional<Group> find(String groupname);
+
     void delete(Group group);
 
     List<Group> findGroups(User user);
 
+    List<Group> findLike(String name);
+
     void addGroup(User user, Group group);
+
+    void removeGroup(User user, Group group);
 
     Builder<Group> builder();
 }

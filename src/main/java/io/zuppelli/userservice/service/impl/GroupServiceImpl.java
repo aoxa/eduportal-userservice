@@ -28,6 +28,9 @@ public class GroupServiceImpl implements GroupService {
     private GroupsByRoleRepository groupsByRoleRepository;
 
     @Autowired
+    private GroupByNameRepository groupByNameRepository;
+
+    @Autowired
     private RoleRepository roleRepository;
 
     @Autowired
@@ -38,6 +41,11 @@ public class GroupServiceImpl implements GroupService {
 
     public Optional<Group> find(UUID id) {
         return groupRepository.findById(id);
+    }
+
+
+    public Optional<Group> find(String groupname) {
+        return groupByNameRepository.getByName(groupname);
     }
 
     public List<Group> findGroups(User user) {
@@ -52,6 +60,23 @@ public class GroupServiceImpl implements GroupService {
         return groupRepository.findAllById(groupsByUser.getGroupIds());
     }
 
+    public List<Group> findLike(String name) {
+        return groupByNameRepository.like(name);
+    }
+
+    public void removeGroup(User user, Group group) {
+        groupByUserRepository.findById(user.getId())
+                .ifPresent(groupsByUser->{
+                    groupsByUser.getGroupIds().remove(group.getId());
+                    groupByUserRepository.save(groupsByUser);
+                });
+        usersByGroupRepository.findById(group.getId())
+                .ifPresent(ubg->{
+                    ubg.getUserIds().remove(user.getId());
+                    usersByGroupRepository.save(ubg);
+                });
+    }
+
     public void addGroup(User user, Group group) {
         Optional<GroupsByUser> optional = groupByUserRepository.findById(user.getId());
         GroupsByUser groupsByUser = optional.orElseGet(()->{
@@ -59,6 +84,7 @@ public class GroupServiceImpl implements GroupService {
             gu.setUserId(user.getId());
             return gu;
         });
+
         if(!groupsByUser.getGroupIds().contains(group.getId())) {
             groupsByUser.getGroupIds().add(group.getId());
 

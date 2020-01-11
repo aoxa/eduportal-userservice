@@ -1,5 +1,6 @@
 package io.zuppelli.userservice.resource.dto;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 public class UserDTO {
@@ -8,6 +9,7 @@ public class UserDTO {
     @NotEmpty
     private String lastName;
     @NotEmpty
+    @Email
     private String email;
 
     private String username;

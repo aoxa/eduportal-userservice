@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,5 +19,14 @@ public class GroupByNameRepository {
         Select select = QueryBuilder.select().from("GROUP_BY_NAME");
         select.where(QueryBuilder.eq("name", name));
         return Optional.ofNullable(cassandraTemplate.selectOne(select, Group.class));
+    }
+
+    public List<Group> like(String name) {
+        Select select = QueryBuilder.select().from("GROUP_BY_NAME");
+            select.where(QueryBuilder.gte("name", name));
+            select.where(QueryBuilder.lte("name", name+"z"));
+
+            select.allowFiltering();
+            return cassandraTemplate.select(select, Group.class);
     }
 }

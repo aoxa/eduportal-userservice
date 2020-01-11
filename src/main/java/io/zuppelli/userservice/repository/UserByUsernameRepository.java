@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface UserByUsernameRepository extends CassandraRepository<UserByUsername, String> {
     @Query(allowFiltering = true)
-    List<UserByUsername> findAllByUsernameGreaterThanEqual(String username);
+    List<UserByUsername> findAllByUsernameGreaterThanEqualAndUsernameLessThanEqual(String lower,String upper);
 }
