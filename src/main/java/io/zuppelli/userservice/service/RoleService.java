@@ -18,4 +18,6 @@ public interface RoleService {
     default void delete(Role role) {delete(role.getId());}
 
     void delete(UUID roleid);
+
+    Builder<Role> builder();
 }

@@ -139,17 +139,21 @@ public class GroupServiceImpl implements GroupService {
 
 
         public void prebuild() {
-                Group group = this.getObj();
+            Group group = this.getObj();
 
-                Role role = new Role();
-                role.setName(group.getName().replace(" ", "_"));
-                role = roleRepository.save(role);
+            Role role = roleService.builder().add("name",
+                    group.getName().replace(" ", "_"))
+                .build();
 
-                group.setPrimaryRole(role.getId());
+            group.setPrimaryRole(role.getId());
 
-                group = groupRepository.save(group);
+            groupRepository.save(group);
+        }
 
-                groupsByRoleRepository.save(new GroupByRole(role.getId(), group.getId()));
+        public void postbuild() {
+            Group group = this.getObj();
+
+            groupsByRoleRepository.save(new GroupByRole(group.getPrimaryRole(), group.getId()));
         }
     }
 }

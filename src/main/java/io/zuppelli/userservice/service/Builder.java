@@ -27,6 +27,8 @@ public abstract class Builder<T> {
             return obj;
 
         } finally {
+            postbuild();
+
             obj = null;
         }
     }
@@ -37,6 +39,8 @@ public abstract class Builder<T> {
 
     protected abstract void prebuild();
 
+    protected abstract void postbuild();
+
     public final Builder<T> add(String method, Object content) {
         if(null == obj) throw new UnsupportedOperationException();
 
@@ -46,7 +50,7 @@ public abstract class Builder<T> {
                 sb.append(StringUtils.capitalize(method));
                 method = sb.toString();
             }
-            Method m = Group.class.getMethod(method, content.getClass());
+            Method m = obj.getClass()   .getMethod(method, content.getClass());
 
             m.invoke(obj, content);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {

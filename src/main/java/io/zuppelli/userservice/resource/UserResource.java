@@ -54,19 +54,11 @@ public class UserResource {
         return userService.persist(user);
     }
 
-    @PostMapping("/invite")
-    public User invite(@Valid @RequestBody InviteDTO dto) {
-        final User user = new User();
-        user.setUsername(dto.getEmail());
-        user.setEmail(dto.getEmail());
-
-        userService.persist(user);
-
-        dto.getUserGroups()
-                .forEach(uuid->groupService.find(uuid)
-                        .ifPresent(group -> groupService.addGroup(user, group)));
-        return user;
+    @GetMapping("/{id}")
+    public Optional<User> getUser(@PathVariable UUID id) {
+        return userService.find(id);
     }
+
     @PutMapping("/{user}")
     public User editUser(@RequestBody @Valid UserDTO dto, @PathVariable User user) {
         user.setFirstName(dto.getFirstName());
@@ -78,23 +70,22 @@ public class UserResource {
         return userService.persist(user);
     }
 
-    @GetMapping("/email/{email}")
-    public Optional<User> getUser(@PathVariable String email) {
-        return userService.find(email);
-    }
+    @GetMapping
+    public Page<User> list(String hash ) {
+        Pageable pageRequest = CassandraPageRequest.of(0,5);
 
-    @GetMapping("/username/{username}")
-    public Optional<User> getByUsername(@PathVariable String username) {
-        UserByUsername userByUsername = usernameRepository.findById(username)
-                .orElseThrow(EntityNotFoundException::new);
+        if(null != hash) {
+            PagingState pagingState = PagingState.fromBytes(Base64.decode(hash));
+            pageRequest = CassandraPageRequest.of(pageRequest, pagingState).next();
+        }
 
-        return userService.find(userByUsername.getUserId());
-    }
+        Slice<User> slice = userService.find(pageRequest);
+        Page<User> page = new Page();
+        page.setElements(slice.getContent());
+        page.setNext(slice.hasNext());
+        page.setPageHash((CassandraPageRequest) slice.getPageable(), hash);
 
-    @GetMapping("/username/query/{username}")
-    public List<Optional<User>> getLikeUsername(@PathVariable String username) {
-        return usernameRepository.findAllByUsernameGreaterThanEqualAndUsernameLessThanEqual(username, username+"z")
-                .stream().map(UserByUsername::getUserId).map(userService::find).collect(Collectors.toList());
+        return page;
     }
 
     @PostMapping("/{user}/activate")
@@ -103,11 +94,6 @@ public class UserResource {
         userService.persist(user);
 
         return user.isEnabled();
-    }
-
-    @GetMapping("/{id}")
-    public Optional<User> getUser(@PathVariable UUID id) {
-        return userService.find(id);
     }
 
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -156,21 +142,36 @@ public class UserResource {
         return roleService.getRoles(u);
     }
 
-    @GetMapping
-    public Page<User> list(String hash ) {
-        Pageable pageRequest = CassandraPageRequest.of(0,5);
+    @PostMapping("/invite")
+    public User invite(@Valid @RequestBody InviteDTO dto) {
+        final User user = new User();
+        user.setUsername(dto.getEmail());
+        user.setEmail(dto.getEmail());
 
-        if(null != hash) {
-            PagingState pagingState = PagingState.fromBytes(Base64.decode(hash));
-            pageRequest = CassandraPageRequest.of(pageRequest, pagingState).next();
-        }
+        userService.persist(user);
 
-        Slice<User> slice = userService.find(pageRequest);
-        Page<User> page = new Page();
-        page.setElements(slice.getContent());
-        page.setNext(slice.hasNext());
-        page.setPageHash((CassandraPageRequest) slice.getPageable(), hash);
+        dto.getUserGroups()
+                .forEach(uuid->groupService.find(uuid)
+                        .ifPresent(group -> groupService.addGroup(user, group)));
+        return user;
+    }
 
-        return page;
+    @GetMapping("/email/{email}")
+    public Optional<User> getUser(@PathVariable String email) {
+        return userService.find(email);
+    }
+
+    @GetMapping("/username/{username}")
+    public Optional<User> getByUsername(@PathVariable String username) {
+        UserByUsername userByUsername = usernameRepository.findById(username)
+                .orElseThrow(EntityNotFoundException::new);
+
+        return userService.find(userByUsername.getUserId());
+    }
+
+    @GetMapping("/username/query/{username}")
+    public List<Optional<User>> getLikeUsername(@PathVariable String username) {
+        return usernameRepository.findAllByUsernameGreaterThanEqualAndUsernameLessThanEqual(username, username+"z")
+                .stream().map(UserByUsername::getUserId).map(userService::find).collect(Collectors.toList());
     }
 }

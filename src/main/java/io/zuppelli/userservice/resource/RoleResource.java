@@ -5,10 +5,13 @@ import io.zuppelli.userservice.exception.EntityNotFoundException;
 import io.zuppelli.userservice.exception.NotAcceptableException;
 import io.zuppelli.userservice.model.Page;
 import io.zuppelli.userservice.model.Role;
+import io.zuppelli.userservice.model.RoleByName;
 import io.zuppelli.userservice.repository.GroupsByRoleRepository;
+import io.zuppelli.userservice.repository.RoleByNameRepository;
 import io.zuppelli.userservice.repository.RoleRepository;
 import io.zuppelli.userservice.repository.UsersByRoleRepository;
 import io.zuppelli.userservice.resource.dto.RoleDTO;
+import io.zuppelli.userservice.service.RoleService;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -23,7 +27,13 @@ import java.util.UUID;
 public class RoleResource
 {
     @Autowired
+    private RoleByNameRepository roleByNameRepository;
+
+    @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private RoleService roleService;
 
     @Autowired
     private GroupsByRoleRepository groupsByRoleRepository;
@@ -33,10 +43,13 @@ public class RoleResource
 
     @PostMapping
     public Role addRole(@RequestBody RoleDTO dto) {
-        Role role = new Role();
-        role.setName(dto.getName().replace(" ", "_"));
+        Role role = roleService.builder()
+                .add("name",
+                        dto.getName().replace(" ", "_"))
+                .add("type", Role.Type.valueOf(dto.getType()))
+                .build();
 
-        return roleRepository.save(role);
+        return role;
     }
 
     @GetMapping("/{role}")
@@ -70,6 +83,12 @@ public class RoleResource
         return true;
     }
 
+    @GetMapping("/name/{name}")
+    public Optional<Role> findBy(@PathVariable String name) {
+        RoleByName rbn = roleByNameRepository.findById(name).orElseThrow(EntityNotFoundException::new);
+
+        return roleRepository.findById(rbn.getRoleId());
+    }
 
     @GetMapping
     public Page<Role> list(String hash, boolean next, boolean prev) {

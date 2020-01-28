@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS ROLES ( id uuid PRIMARY KEY, name text);
+CREATE TABLE IF NOT EXISTS ROLES ( id uuid PRIMARY KEY, name text, type text);
 
 CREATE TABLE IF NOT EXISTS GROUPS ( id uuid PRIMARY KEY, name text, primary_role uuid);
 
@@ -19,3 +19,5 @@ CREATE TABLE IF NOT EXISTS ROLES_BY_USER ( user_id uuid PRIMARY KEY, role_ids se
 CREATE TABLE IF NOT EXISTS GROUPS_BY_USER ( user_id uuid PRIMARY KEY, group_ids set<uuid>);
 
 CREATE TABLE IF NOT EXISTS USERS_BY_GROUP ( group_id uuid PRIMARY KEY, user_ids set<uuid>);
+
+CREATE TABLE IF NOT EXISTS ROLE_BY_NAME ( name text PRIMARY KEY, role_id uuid);

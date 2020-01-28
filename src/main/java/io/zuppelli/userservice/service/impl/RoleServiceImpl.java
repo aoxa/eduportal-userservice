@@ -1,12 +1,11 @@
 package io.zuppelli.userservice.service.impl;
 
-import io.zuppelli.userservice.model.Role;
-import io.zuppelli.userservice.model.RolesByUser;
-import io.zuppelli.userservice.model.User;
-import io.zuppelli.userservice.model.UsersByRole;
+import io.zuppelli.userservice.model.*;
+import io.zuppelli.userservice.repository.RoleByNameRepository;
 import io.zuppelli.userservice.repository.RoleRepository;
 import io.zuppelli.userservice.repository.RolesByUserRepository;
 import io.zuppelli.userservice.repository.UsersByRoleRepository;
+import io.zuppelli.userservice.service.Builder;
 import io.zuppelli.userservice.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Autowired
     private UsersByRoleRepository usersByRoleRepository;
+
+    @Autowired
+    private RoleByNameRepository roleByNameRepository;
 
     @Override
     public Optional<Role> find(UUID id) {
@@ -68,5 +70,34 @@ public class RoleServiceImpl implements RoleService {
 
 
         roleRepository.findById(roleId).ifPresent(roleRepository::delete);
+    }
+
+    public Builder<Role> builder() {
+        return this.new RoleBuilder();
+    }
+
+    private class RoleBuilder extends Builder<Role> {
+
+        public RoleBuilder() {
+            super(Role.class);
+        }
+
+        @Override
+        protected void prebuild() {
+            roleRepository.save(this.getObj());
+        }
+
+        @Override
+        protected void postbuild() {
+            Role role = this.getObj();
+            RoleByName rbn = new RoleByName();
+
+            rbn.setRoleId(role.getId());
+            rbn.setName(role.getName());
+
+            roleByNameRepository.save(rbn);
+        }
+
+
     }
 }
